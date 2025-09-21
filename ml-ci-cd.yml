@@ -1,0 +1,49 @@
+name: ML Continuous Training & Evaluation
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  train-and-evaluate:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.12
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install nbconvert
+
+    - name: Execute training notebook
+      run: |
+        jupyter nbconvert --to notebook --execute Edge_AI_Image_Classifier_MNIST.ipynb --output executed_notebook.ipynb
+
+    - name: Upload executed notebook
+      uses: actions/upload-artifact@v3
+      with:
+        name: executed-notebook
+        path: executed_notebook.ipynb
+
+    - name: Generate evaluation report
+      run: |
+        echo "Training and evaluation complete." > report.md
+        echo "Check executed_notebook.ipynb artifact for full details." >> report.md
+
+    - name: Upload evaluation report
+      uses: actions/upload-artifact@v3
+      with:
+        name: evaluation-report
+        path: report.md
